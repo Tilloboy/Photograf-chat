@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_fotograf_chat/Home/Home.dart';
+import 'package:my_fotograf_chat/Registratsia/Google/Google_sing.dart';
 
 class Logup extends StatefulWidget {
   const Logup({super.key});
@@ -25,15 +27,20 @@ class _LogupState extends State<Logup> {
 
   // Parolni tekshirish
   bool validatePassword(String password) {
-    // Kichik harflar va 6 ta belgidan iborat bo'lishini tekshiradi
-    return password.length >= 6 && password == password.toLowerCase();
+    // Parolda kamida 8 ta belgi, bitta katta harf, bitta kichik harf va bitta raqam bo'lishi kerak
+    String pattern =
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*.-])[A-Za-z\d!@#$%^&*.-]{8,}$';
+
+    RegExp regExp = RegExp(pattern);
+    return regExp.hasMatch(password);
   }
 
   // Emailni tekshirish
   bool validateEmail(String email) {
     // Email formatini tekshiradi
     String pattern =
-        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$';
+        r'^[a-zA-Z0-9._%+-]+@(gmail\.com|example\.com|yahoo\.com)$';
+
     RegExp regExp = RegExp(pattern);
     return regExp.hasMatch(email);
   }
@@ -43,19 +50,26 @@ class _LogupState extends State<Logup> {
       try {
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Registered Successfully",
-              style: TextStyle(fontSize: 20.0),
+
+        // Agar ro'yxatdan o'tish muvaffaqiyatli bo'lsa
+        if (userCredential.user != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Registered Successfully",
+                style: TextStyle(fontSize: 20.0),
+              ),
             ),
-          ),
-        );
-        Navigator.push(
+          );
+
+          // Home sahifasiga o'tish
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => Home(), // Home sahifasini o'zgartiring
-            ));
+              builder: (context) => Home(),
+            ),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -80,7 +94,7 @@ class _LogupState extends State<Logup> {
         }
       }
     } else {
-      // Formani tekshirishda xato
+      // Formani to'liq to'ldirish kerak
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Please fill out the form correctly")),
       );
@@ -98,9 +112,9 @@ class _LogupState extends State<Logup> {
             child: Form(
               key: _formkey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 100),
+                  SizedBox(height: 50),
                   Center(
                     child: Text(
                       "YOW AGAIN!",
@@ -242,7 +256,8 @@ class _LogupState extends State<Logup> {
                       children: [
                         Text(
                           "Valid email format",
-                          style: TextStyle(color: isEmailValid ? Colors.green : Colors.red),
+                          style: TextStyle(
+                              color: isEmailValid ? Colors.green : Colors.red),
                         ),
                         if (isEmailValid)
                           Icon(Icons.check, color: Colors.green),
@@ -281,7 +296,7 @@ class _LogupState extends State<Logup> {
                               if (value.isEmpty) {
                                 return "Please enter a password";
                               } else if (!validatePassword(value)) {
-                                return "Password must be at least 6 characters and contain only lowercase letters";
+                                return "Password must be at least 8 characters and contain only lowercase letters";
                               }
                               return null;
                             },
@@ -322,7 +337,9 @@ class _LogupState extends State<Logup> {
                       children: [
                         Text(
                           "Password is valid",
-                          style: TextStyle(color: isPasswordValid ? Colors.green : Colors.red),
+                          style: TextStyle(
+                              color:
+                                  isPasswordValid ? Colors.green : Colors.red),
                         ),
                         if (isPasswordValid)
                           Icon(Icons.check, color: Colors.green),
@@ -336,14 +353,17 @@ class _LogupState extends State<Logup> {
                         horizontal: 65, vertical: 20),
                     child: GestureDetector(
                       onTap: () {
+                        // Foydalanuvchi formani to'ldirganini tekshirish
                         if (_formkey.currentState!.validate()) {
                           setState(() {
                             email = emailcontroller.text;
                             name = namecontroller.text;
                             password = passwordcontroller.text;
                           });
+
+                          // Registrationni amalga oshiradi
+                          registration();
                         }
-                        registration();
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -355,7 +375,7 @@ class _LogupState extends State<Logup> {
                               horizontal: 10, vertical: 8),
                           child: Center(
                             child: Text(
-                              "Next",
+                              "Sign Up",
                               style: TextStyle(
                                 fontSize: 25,
                                 fontWeight: FontWeight.w600,
@@ -367,6 +387,7 @@ class _LogupState extends State<Logup> {
                       ),
                     ),
                   ),
+
                   SizedBox(height: 16.0),
                   Text(
                     "Or Register in with",
@@ -377,8 +398,55 @@ class _LogupState extends State<Logup> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () {
-                          // Implement Google sign-in functionality here
+                        onPressed: () async {
+                          try {
+                            // Google sign-in jarayonini boshlash
+                            final GoogleSignInAccount? googleUser =
+                                await GoogleSignIn().signIn();
+                            if (googleUser == null) {
+                              // Agar foydalanuvchi hech qanday hisobni tanlamasa yoki kirishni bekor qilsa, hech narsa qilmaymiz
+                              print("Google sign-in canceled");
+                              return;
+                            }
+
+                            // Google account bilan autentifikatsiya qilish
+                            final GoogleSignInAuthentication googleAuth =
+                                await googleUser.authentication;
+
+                            final AuthCredential credential =
+                                GoogleAuthProvider.credential(
+                              accessToken: googleAuth.accessToken,
+                              idToken: googleAuth.idToken,
+                            );
+
+                            // Firebase bilan tizimga kirish
+                            await FirebaseAuth.instance
+                                .signInWithCredential(credential);
+
+                            // Tizimga kirgandan so'ng Home sahifasiga yo'naltirish
+                            if (FirebaseAuth.instance.currentUser != null) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const Home(),
+                                ),
+                              );
+                            } else {
+                              // Agar foydalanuvchi tizimga kira olmasa
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content:
+                                        Text("Failed to sign in with Google")),
+                              );
+                            }
+                          } catch (e) {
+                            print("Error during Google sign-in: $e");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text("Error signing in with Google")),
+                            );
+                          }
                         },
                         label: Row(
                           children: [
@@ -436,14 +504,19 @@ class _LogupState extends State<Logup> {
                         child: Text(
                           " Log in",
                           style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500,
-                              color: Color.fromARGB(255, 107, 107, 252)),
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromARGB(
+                              255,
+                              107,
+                              107,
+                              252,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 100.0),
                 ],
               ),
             ),
