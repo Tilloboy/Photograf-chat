@@ -469,21 +469,41 @@ class _LogupState extends State<Logup> {
                         ),
                       ),
                       SizedBox(width: 16.0),
-                      ElevatedButton.icon(
+                    ElevatedButton.icon(
                         onPressed: () {
-                          // Implement Facebook sign-in functionality here
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Facebook Sign-in'),
+                                content: Text(
+                                    'Sorry, this registration method is currently not working. We are working on it, please use another method'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pop(); // Dialogni yopish
+                                    },
+                                    child: Text('OK'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                         icon: Icon(Icons.facebook, color: Colors.white),
                         label: Text(
                           'Facebook',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           padding: EdgeInsets.symmetric(
                               horizontal: 20, vertical: 10),
                         ),
-                      ),
+                      )
                     ],
                   ),
                   SizedBox(height: 45),
