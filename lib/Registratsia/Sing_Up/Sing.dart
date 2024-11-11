@@ -27,11 +27,12 @@ class _LogupState extends State<Logup> {
   // Parolni tekshirish
   bool validatePassword(String password) {
     // Parolda kamida 8 ta belgi, bitta katta harf, bitta kichik harf va bitta raqam bo'lishi kerak
-    String pattern =
-        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*.-])[A-Za-z\d!@#$%^&*.-]{8,}$';
+    if (password.length < 8) return false;
+    if (!password.contains(RegExp(r'[A-Z]'))) return false;
+    if (!password.contains(RegExp(r'[a-z]'))) return false;
+    if (!password.contains(RegExp(r'\d'))) return false;
 
-    RegExp regExp = RegExp(pattern);
-    return regExp.hasMatch(password);
+    return true;
   }
 
   // Emailni tekshirish
@@ -293,9 +294,9 @@ class _LogupState extends State<Logup> {
                             validator: (value) {
                               password = value!;
                               if (value.isEmpty) {
-                                return "Please enter a password";
+                                return "Create a password";
                               } else if (!validatePassword(value)) {
-                                return "Password must be at least 8 characters and contain only lowercase letters";
+                                return "Password must contain at least 8 characters and\n at least 1 uppercase, 1 lowercase, and 1 number.";
                               }
                               return null;
                             },
@@ -446,8 +447,8 @@ class _LogupState extends State<Logup> {
                             print("Error during Google sign-in: $e");
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content:
-                                      Text("Error signing in with Google")),
+                                  content: Text(
+                                      "There was an error signing in to your Google Account. Make sure you are connected to the Internet. Your account may be blocked.")),
                             );
                           }
                         },

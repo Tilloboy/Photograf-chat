@@ -6,7 +6,7 @@ import 'package:my_fotograf_chat/Registratsia/Forget_pas.dart';
 import 'package:my_fotograf_chat/Registratsia/Sing_Up/Sing.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  const Login({super.key, String? logoutMessage});
 
   @override
   State<Login> createState() => _LoginState();
