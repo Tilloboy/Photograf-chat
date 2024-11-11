@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_fotograf_chat/Home/Home.dart';
 import 'package:my_fotograf_chat/Registratsia/Forget_pas.dart';
-import 'package:my_fotograf_chat/Registratsia/Google/Google_sing.dart';
 import 'package:my_fotograf_chat/Registratsia/Sing_Up/Sing.dart';
-import 'package:my_fotograf_chat/Wrapper/Wrap_register.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -273,77 +271,73 @@ class _LoginState extends State<Login> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () async {
-                          try {
-                            // Google orqali tizimga kirish jarayonini boshlash
-                            final GoogleSignInAccount? googleUser =
-                                await GoogleSignIn().signIn();
+  onPressed: () async {
+    try {
+      // Avval foydalanuvchini tizimdan chiqaramiz
+      await GoogleSignIn().signOut();
 
-                            if (googleUser == null) {
-                              // Agar foydalanuvchi Google hisobini tanlamasa yoki tizimga kirishni bekor qilsa
-                              print("Google sign-in canceled");
-                              return;
-                            }
+      // Google orqali tizimga kirish jarayonini boshlash
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-                            // Agar foydalanuvchi hisobini tanlasa, autentifikatsiya jarayonini davom ettiramiz
-                            final GoogleSignInAuthentication googleAuth =
-                                await googleUser.authentication;
+      if (googleUser == null) {
+        // Agar foydalanuvchi Google hisobini tanlamasa yoki tizimga kirishni bekor qilsa
+        print("Google sign-in canceled");
+        return;
+      }
 
-                            final AuthCredential credential =
-                                GoogleAuthProvider.credential(
-                              accessToken: googleAuth.accessToken,
-                              idToken: googleAuth.idToken,
-                            );
+      // Agar foydalanuvchi hisobini tanlasa, autentifikatsiya jarayonini davom ettiramiz
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-                            // Firebase orqali tizimga kirish
-                            await FirebaseAuth.instance
-                                .signInWithCredential(credential);
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
-                            // Tizimga kirganidan so'ng Home sahifasiga o'tish
-                            if (FirebaseAuth.instance.currentUser != null) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const Home(),
-                                ),
-                              );
-                            } else {
-                              // Agar tizimga kira olmasa
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content:
-                                        Text("Failed to sign in with Google")),
-                              );
-                            }
-                          } catch (e) {
-                            print("Error during Google sign-in: $e");
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                      Text("Error signing in with Google")),
-                            );
-                          }
-                        },
-                        label: Row(
-                          children: [
-                            Container(
-                              width: 20,
-                              height: 25,
-                              child: Image.asset("images/google.png"),
-                            ),
-                            SizedBox(width: 20),
-                            Text(
-                              'Google',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                        ),
-                      ),
+      // Firebase orqali tizimga kirish
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Tizimga kirganidan so'ng Home sahifasiga o'tish
+      if (FirebaseAuth.instance.currentUser != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const Home(),
+          ),
+        );
+      } else {
+        // Agar tizimga kira olmasa
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to sign in with Google")),
+        );
+      }
+    } catch (e) {
+      print("Error during Google sign-in: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error signing in with Google")),
+      );
+    }
+  },
+  label: Row(
+    children: [
+      Container(
+        width: 20,
+        height: 25,
+        child: Image.asset("images/google.png"),
+      ),
+      SizedBox(width: 20),
+      Text(
+        'Google',
+        style: TextStyle(color: Colors.white),
+      ),
+    ],
+  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.transparent,
+    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  ),
+),
+
                       SizedBox(width: 16.0),
                       ElevatedButton.icon(
                         onPressed: () {

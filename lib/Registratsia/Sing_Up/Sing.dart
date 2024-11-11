@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_fotograf_chat/Home/Home.dart';
-import 'package:my_fotograf_chat/Registratsia/Google/Google_sing.dart';
 
 class Logup extends StatefulWidget {
   const Logup({super.key});
@@ -400,16 +399,20 @@ class _LogupState extends State<Logup> {
                       ElevatedButton.icon(
                         onPressed: () async {
                           try {
-                            // Google sign-in jarayonini boshlash
+                            // Avval foydalanuvchini tizimdan chiqaramiz
+                            await GoogleSignIn().signOut();
+
+                            // Google orqali tizimga kirish jarayonini boshlash
                             final GoogleSignInAccount? googleUser =
                                 await GoogleSignIn().signIn();
+
                             if (googleUser == null) {
-                              // Agar foydalanuvchi hech qanday hisobni tanlamasa yoki kirishni bekor qilsa, hech narsa qilmaymiz
+                              // Agar foydalanuvchi Google hisobini tanlamasa yoki tizimga kirishni bekor qilsa
                               print("Google sign-in canceled");
                               return;
                             }
 
-                            // Google account bilan autentifikatsiya qilish
+                            // Agar foydalanuvchi hisobini tanlasa, autentifikatsiya jarayonini davom ettiramiz
                             final GoogleSignInAuthentication googleAuth =
                                 await googleUser.authentication;
 
@@ -419,11 +422,11 @@ class _LogupState extends State<Logup> {
                               idToken: googleAuth.idToken,
                             );
 
-                            // Firebase bilan tizimga kirish
+                            // Firebase orqali tizimga kirish
                             await FirebaseAuth.instance
                                 .signInWithCredential(credential);
 
-                            // Tizimga kirgandan so'ng Home sahifasiga yo'naltirish
+                            // Tizimga kirganidan so'ng Home sahifasiga o'tish
                             if (FirebaseAuth.instance.currentUser != null) {
                               Navigator.pushReplacement(
                                 context,
@@ -432,7 +435,7 @@ class _LogupState extends State<Logup> {
                                 ),
                               );
                             } else {
-                              // Agar foydalanuvchi tizimga kira olmasa
+                              // Agar tizimga kira olmasa
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                     content:
@@ -469,7 +472,7 @@ class _LogupState extends State<Logup> {
                         ),
                       ),
                       SizedBox(width: 16.0),
-                    ElevatedButton.icon(
+                      ElevatedButton.icon(
                         onPressed: () {
                           showDialog(
                             context: context,
