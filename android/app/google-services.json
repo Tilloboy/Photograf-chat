@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "552061706483",
+    "project_id": "real-app-fotogrf-chat",
+    "storage_bucket": "real-app-fotogrf-chat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552061706483:android:f9db955178cc8b5b645786",
+        "android_client_info": {
+          "package_name": "com.example.my_fotograf_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "552061706483-5vamafc08a9kejjal6s5v6pla08mh1uq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.my_fotograf_chat",
+            "certificate_hash": "86080d5e29a5575b170a6094532c1abc22d18962"
+          }
+        },
+        {
+          "client_id": "552061706483-a43pdmte3gc6fp2b11uedjvhtcjqsi9e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEu2bM9ZjSI0B-IyANrJZ2Xp68UbaKjs0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "552061706483-a43pdmte3gc6fp2b11uedjvhtcjqsi9e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
