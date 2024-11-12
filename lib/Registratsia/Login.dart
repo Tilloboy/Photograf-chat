@@ -26,18 +26,19 @@ class _LoginState extends State<Login> {
     try {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Home(),
-          ));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Home(),
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       if (e.code == "User-not-found") {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.orangeAccent,
             content: Text(
-              "No User Found for thet Email",
+              "No User Found for that Email",
               style: TextStyle(fontSize: 18.0),
             ),
           ),
@@ -47,7 +48,7 @@ class _LoginState extends State<Login> {
           SnackBar(
             backgroundColor: Colors.orangeAccent,
             content: Text(
-              "Worning Passwor Provided by User",
+              "Wrong Password Provided by User",
               style: TextStyle(fontSize: 18.0),
             ),
           ),
@@ -271,73 +272,80 @@ class _LoginState extends State<Login> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton.icon(
-  onPressed: () async {
-    try {
-      // Avval foydalanuvchini tizimdan chiqaramiz
-      await GoogleSignIn().signOut();
+                        onPressed: () async {
+                          try {
+                            // Avval foydalanuvchini tizimdan chiqaramiz
+                            await GoogleSignIn().signOut();
 
-      // Google orqali tizimga kirish jarayonini boshlash
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                            // Google orqali tizimga kirish jarayonini boshlash
+                            final GoogleSignInAccount? googleUser =
+                                await GoogleSignIn().signIn();
 
-      if (googleUser == null) {
-        // Agar foydalanuvchi Google hisobini tanlamasa yoki tizimga kirishni bekor qilsa
-        print("Google sign-in canceled");
-        return;
-      }
+                            if (googleUser == null) {
+                              // Agar foydalanuvchi Google hisobini tanlamasa yoki tizimga kirishni bekor qilsa
+                              print("Google sign-in canceled");
+                              return;
+                            }
 
-      // Agar foydalanuvchi hisobini tanlasa, autentifikatsiya jarayonini davom ettiramiz
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+                            // Agar foydalanuvchi hisobini tanlasa, autentifikatsiya jarayonini davom ettiramiz
+                            final GoogleSignInAuthentication googleAuth =
+                                await googleUser.authentication;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+                            final AuthCredential credential =
+                                GoogleAuthProvider.credential(
+                              accessToken: googleAuth.accessToken,
+                              idToken: googleAuth.idToken,
+                            );
 
-      // Firebase orqali tizimga kirish
-      await FirebaseAuth.instance.signInWithCredential(credential);
+                            // Firebase orqali tizimga kirish
+                            await FirebaseAuth.instance
+                                .signInWithCredential(credential);
 
-      // Tizimga kirganidan so'ng Home sahifasiga o'tish
-      if (FirebaseAuth.instance.currentUser != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const Home(),
-          ),
-        );
-      } else {
-        // Agar tizimga kira olmasa
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to sign in with Google")),
-        );
-      }
-    } catch (e) {
-      print("Error during Google sign-in: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error signing in with Google")),
-      );
-    }
-  },
-  label: Row(
-    children: [
-      Container(
-        width: 20,
-        height: 25,
-        child: Image.asset("images/google.png"),
-      ),
-      SizedBox(width: 20),
-      Text(
-        'Google',
-        style: TextStyle(color: Colors.white),
-      ),
-    ],
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.transparent,
-    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-  ),
-),
-
+                            // Tizimga kirganidan so'ng Home sahifasiga o'tish
+                            if (FirebaseAuth.instance.currentUser != null) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const Home(),
+                                ),
+                              );
+                            } else {
+                              // Agar tizimga kira olmasa
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content:
+                                        Text("Failed to sign in with Google")),
+                              );
+                            }
+                          } catch (e) {
+                            print("Error during Google sign-in: $e");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      "There was an error signing in to your Google Account. Make sure you are connected to the Internet. Your account may be blocked.")),
+                            );
+                          }
+                        },
+                        label: Row(
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 25,
+                              child: Image.asset("images/google.png"),
+                            ),
+                            SizedBox(width: 20),
+                            Text(
+                              'Google',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                        ),
+                      ),
                       SizedBox(width: 16.0),
                       ElevatedButton.icon(
                         onPressed: () {

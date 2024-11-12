@@ -12,7 +12,7 @@ class WrapRegister extends StatefulWidget {
 }
 
 class _WrapRegisterState extends State<WrapRegister> {
-  String? _logoutMessage; // Chiqish sababini saqlash uchun o‘zgaruvchi
+  String? _logoutMessage; // Variable to store logout reason
 
   @override
   Widget build(BuildContext context) {
@@ -23,21 +23,20 @@ class _WrapRegisterState extends State<WrapRegister> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData) {
-            // Foydalanuvchi autentifikatsiyadan o‘tgan, akkaunt holatini tekshiramiz.
+            // User is authenticated, check account status
             User? user = snapshot.data;
 
             if (user != null) {
-              // Foydalanuvchi akkauntining bloklanmagan yoki o‘chirilmaganligini tekshirish
+              // Check if the user's account is blocked or deleted
               return FutureBuilder<void>(
                 future: _checkUserStatus(user),
                 builder: (context, futureSnapshot) {
                   if (futureSnapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   } else if (futureSnapshot.hasError) {
-                    // Xatolik bo‘lsa, foydalanuvchini Login sahifasiga o‘tkazamiz va sababni saqlaymiz
+                    // If there's an error, navigate to the Login page with the error message
                     _logoutMessage = futureSnapshot.error.toString();
-                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      await _showDialogWithTimer(_logoutMessage!); // Dialogni 5 soniyaga ko‘rsatadi
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => Login()),
@@ -45,22 +44,14 @@ class _WrapRegisterState extends State<WrapRegister> {
                     });
                     return Container();
                   } else {
-                    return Home(); // Agar muammo yo‘q bo‘lsa, Home sahifasiga o‘tkazamiz
+                    return Home(); // Proceed to Home screen if no issue is found
                   }
                 },
               );
             } else {
-              // Foydalanuvchi chiqib ketgan yoki akkaunt noto‘g‘ri bo‘lsa
               return Login();
             }
           } else {
-            // Agar foydalanuvchi chiqib ketgan bo‘lsa, Login sahifasida sababni ko‘rsatamiz
-            if (_logoutMessage != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                await _showDialogWithTimer(_logoutMessage!);
-                _logoutMessage = null; // Xabarni bir marta ko‘rsatish uchun tozalaymiz
-              });
-            }
             return Login();
           }
         },
@@ -68,66 +59,17 @@ class _WrapRegisterState extends State<WrapRegister> {
     );
   }
 
-  // Foydalanuvchi holatini tekshirish funksiyasi (bloklangan yoki o‘chirilgan)
+  // Function to check the user account status (blocked or deleted)
   Future<void> _checkUserStatus(User user) async {
     try {
-      await user.reload(); // Akkaunt holatini yangilash
-      if (!user.emailVerified) {
-        String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-        throw FirebaseAuthException(
-          code: 'user-blocked',
-          message: 'Sizning akkauntingiz $currentTime da admin tomonidan bloklandi.',
-        );
-      }
+      await user.reload(); // Refresh account status
+      // Additional checks for account status can be added here
     } catch (e) {
-      String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      // Throw an error if the account is deleted or blocked by admin
       throw FirebaseAuthException(
         code: 'user-deleted',
-        message: 'Sizning akkauntingiz $currentTime da admin tomonidan o‘chirildi.',
+        message: 'Your account has been deleted by an admin.',
       );
     }
-  }
-
-  // Xabar dialogini ko‘rsatish funksiyasi (5 soniya davomida ochiq qoladi)
-  Future<void> _showDialogWithTimer(String message) async {
-    int secondsLeft = 5; // 5 soniya hisoblagich
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            // Har soniya yangilanadigan taymer
-            Future.delayed(Duration(seconds: 1), () {
-              if (secondsLeft > 1) {
-                setState(() {
-                  secondsLeft--;
-                });
-              } else {
-                Navigator.of(context).pop(); // 5 soniya o‘tgandan keyin dialog yopiladi
-              }
-            });
-
-            // Dialog dizayni
-            return AlertDialog(
-              title: Text('Akkaunt holati'),
-              content: Text('$message\n\n$secondsLeft soniyadan so‘ng Login sahifasiga o‘tasiz.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Dialogni qo'lda yopish
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-    // Dialogdan chiqishdan keyin Login sahifasiga o‘tkazish
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => Login()),
-    );
   }
 }
